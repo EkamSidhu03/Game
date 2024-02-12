@@ -1,0 +1,234 @@
+import pygame
+import os
+import random
+import csv
+
+class Player:
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((50, 50))  # Placeholder, replace with an actual player image
+        self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.ammo = 10
+        self.grenades = 3
+        self.health = 100
+        self.alive = True
+        self.in_air = False
+
+    def update(self):
+        # Update player position or any other relevant attributes
+        pass
+
+    def draw(self):
+        # Draw the player on the screen
+        pass
+
+    def shoot(self):
+        # Implement shooting logic
+        pass
+
+    def move(self, left, right):
+        # Implement player movement logic
+        screen_scroll = 0
+        level_complete = False
+        # ... (Update player position based on left and right movement)
+        return screen_scroll, level_complete
+
+class Button:
+    def __init__(self, text, x, y, width, height, color):
+        self.text = text
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        # Add text rendering logic here
+        # ...
+
+    def is_clicked(self, mouse_pos):
+        # Implement logic to check if the button is clicked
+        # ...
+        return False
+
+class World:
+    def __init__(self):
+        # Initialize the world or map properties here
+        pass
+
+    def draw(self):
+        # Implement the logic to draw the world or map on the screen
+        pass
+
+class RestartButton(Button):
+    def __init__(self, text, x, y, width, height, color):
+        super().__init__(text, x, y, width, height, color)
+
+    def draw(self, screen):
+        # Implement RestartButton draw logic
+        pass
+
+class HealthBar:
+    def __init__(self):
+        # Initialize health bar properties here
+        pass
+
+    def draw(self, health):
+        # Implement the logic to render the health bar based on the player's health value
+        pass
+
+class DeathFade:
+    def __init__(self):
+        # Initialize death fade properties here
+        pass
+
+    def fade(self):
+        # Implement the logic for fading the screen upon player death
+        pass
+
+class Grenade(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        super().__init__()
+        # Implement Grenade initialization logic
+        pass
+
+    def update(self):
+        # Implement Grenade update logic
+        pass
+
+def draw_bg():
+    # Implement draw_bg logic
+    pass
+
+# Initialize Pygame and mixer
+pygame.init()
+pygame.mixer.init()
+
+
+# Constants
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = int(SCREEN_WIDTH * 0.8)
+BG = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Initialize screen and clock
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Shooter")
+
+clock = pygame.time.Clock()
+FPS = 60
+
+# Instantiate objects
+player = Player()
+all_sprites = pygame.sprite.Group()
+GRAVITY = 0.75
+SCROLL_THRESH = 200
+ROWS = 16
+COLS = 150
+TILE_SIZE = SCREEN_HEIGHT // ROWS
+TILE_TYPE = 21
+MAX_LEVELS = 3
+bg_scroll = 0
+screen_scroll = 0
+level = 1
+start_game = False
+start_intro = False
+start_button = Button("Start", 100, 100, 150, 50, WHITE)
+exit_button = Button("Exit", 100, 200, 150, 50, WHITE)
+restart_button = RestartButton("Restart", 100, 300, 150, 50, WHITE)
+world = World()
+health_bar = HealthBar()
+death_fade = DeathFade()
+
+def handle_player_death():
+    # Implement logic to handle player death
+    pass
+
+def handle_level_completion():
+    # Implement logic to handle level completion
+    pass
+
+# Game loop
+run = True
+# Initial values for movement variables
+moving_left = False
+moving_right = False
+shoot = False  # Initialize the shoot variable
+
+# Load sounds
+jump_fx = pygame.mixer.Sound('assets/sounds/jump.wav')
+jump_fx.set_volume(0.5)
+shot_fx = pygame.mixer.Sound('assets/sounds/shot.wav')
+shot_fx.set_volume(0.5)
+grenade_fx = pygame.mixer.Sound('assets/sounds/grenade.wav')
+grenade_fx.set_volume(0.5)
+font_path = pygame.font.match_font('arial')
+font = pygame.font.Font(font_path, 32)
+
+def draw_text(text, font, color, x, y):
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, (x, y))
+
+while run:
+    clock.tick(FPS)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        elif event.type == pygame.KEYDOWN:
+            # Handle keydown events
+            pass
+        elif event.type == pygame.KEYUP:
+            # Handle keyup events
+            pass
+
+    if not start_game:
+        # Draw menu
+        screen.fill(BG)
+        if start_button.draw(screen) and start_button.is_clicked(pygame.mouse.get_pos()):
+            start_game = True
+            start_intro = True
+        exit_button.draw(screen)
+    else:
+        # Update background
+        screen.fill(BG)
+
+        # Draw world map
+        world.draw()
+
+        # Show player health
+        health_bar.draw(player.health)
+
+        # Show ammo count
+        draw_text('AMMO: ', font, WHITE, 10, 35)
+        # ... (Other UI elements)
+
+        player.update()
+        player.draw()
+
+        # Handle player actions
+        if shoot:
+            player.shoot()
+        # ... (Other player actions)
+
+        screen_scroll, level_complete = player.move(moving_left, moving_right)
+        bg_scroll -= screen_scroll
+
+        # Check if the player has completed the level
+        if level_complete:
+            handle_level_completion()
+        else:
+            screen_scroll = 0
+            if death_fade.fade():
+                restart_button.draw(screen)
+                if restart_button.is_clicked(pygame.mouse.get_pos()):
+                    handle_player_death()
+                  
+    all_sprites.add(player)  # Add the player directly to the group
+    all_sprites.update()  # Update all sprites in the group
+    all_sprites.draw(screen)  # Draw all sprites on the screen
+  
+    pygame.display.update()
+
+pygame.quit()
